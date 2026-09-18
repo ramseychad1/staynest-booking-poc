@@ -38,6 +38,17 @@ function keyFor(originalName) {
   return `${Date.now()}-${crypto.randomBytes(8).toString("hex")}${ext}`;
 }
 
+// Local-disk URLs must be absolute: the frontend and admin panel are on
+// entirely different origins than this API (both locally and, especially,
+// once deployed - e.g. separate Railway services), so a relative "/uploads/x"
+// resolves against the WRONG origin (whichever app is rendering the <img>),
+// not this backend. RAILWAY_PUBLIC_DOMAIN is auto-injected once this service
+// has a generated domain; PORT falls back for local dev.
+function publicBaseUrl() {
+  if (process.env.RAILWAY_PUBLIC_DOMAIN) return `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+  return `http://localhost:${process.env.PORT || 8001}`;
+}
+
 export const storageMode = s3Configured ? "s3" : "local";
 
 export async function saveFile(file) {
@@ -64,7 +75,7 @@ export async function saveFile(file) {
 
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
   fs.writeFileSync(path.join(UPLOADS_DIR, key), file.buffer);
-  return { key, url: `/uploads/${key}` };
+  return { key, url: `${publicBaseUrl()}/uploads/${key}` };
 }
 
 export async function deleteFile(urlOrKey) {
@@ -78,8 +89,8 @@ export async function deleteFile(urlOrKey) {
     return;
   }
 
-  if (urlOrKey.startsWith("/uploads/")) {
-    const key = urlOrKey.replace("/uploads/", "");
+  if (urlOrKey.includes("/uploads/")) {
+    const key = urlOrKey.split("/uploads/").pop();
     fs.rm(path.join(UPLOADS_DIR, key), { force: true }, () => {});
   }
 }

@@ -26,7 +26,7 @@ const contentSecurityPolicy =
   "script-src 'self' 'unsafe-inline'; " +
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
   "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-  "img-src 'self' data: blob: http://localhost:3000 https://api.dicebear.com https://d3jxmneabzth3l.cloudfront.net https://d2om00vm7sdvbc.cloudfront.net; " +
+  `img-src 'self' data: blob: http://localhost:3000 https://api.dicebear.com https://d3jxmneabzth3l.cloudfront.net https://d2om00vm7sdvbc.cloudfront.net${apiOrigin ? ` ${apiOrigin}` : ""}; ` +
   "font-src 'self' data: https://fonts.gstatic.com; " +
   `connect-src 'self' http://localhost:* ws://localhost:* https://api.thekeysvibe.com${apiOrigin ? ` ${apiOrigin}` : ""}; ` +
   "frame-src 'self' https://www.google.com https://maps.google.com;; " +
