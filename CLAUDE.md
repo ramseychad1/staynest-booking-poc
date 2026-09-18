@@ -21,6 +21,22 @@ This repo was originally wired as three git **submodules** (`TheBayHome-Frontend
 
 The backend is expected at `http://localhost:8001/api` in local dev.
 
+## Deployed environments (Railway)
+
+Project `staynest-booking-poc`, `staging` environment — all three apps are live and wired together:
+
+| App | URL |
+|---|---|
+| Public website | https://staynest-frontend-staging.up.railway.app |
+| Admin console | https://staynest-admin-staging.up.railway.app |
+| Backend API | https://staynest-booking-poc-staging.up.railway.app (health: `/api/health`) |
+
+Demo logins (same on local and staging — seeded by `prisma/seed.js`):
+- Admin: `admin@thekeysvibe.com` / `Admin123!`
+- Guest: `guest@thekeysvibe.com` / `Guest123!`
+
+`production` environment exists but is not configured (default Railpack config, no rootDirectory set on any service) — it will fail to build until set up the same way `staging` was, or left alone deliberately.
+
 ## Commands
 
 ### Frontend (`TheBayHome-Frontend`)
@@ -92,9 +108,19 @@ Prisma's CLI refuses to run `migrate reset` (or other destructor commands) when 
 - Not implemented: blog CMS, things-to-do CMS, error-log endpoints (the admin panel's `blogsApi`, `thingsToDoApi`, `errorLogsApi` will all 404 against this backend). Also not implemented: real email delivery, Google OAuth login, BullMQ/Redis job queue — the original README's documented stack for those was Mongo-specific and wasn't carried over.
 
 #### Deploying (Railway)
+
+**Backend** — deployed via a custom `Dockerfile` (the other two use Railway's auto-detect builder instead; see below).
 - **`Dockerfile`'s `COPY` paths are relative to `TheBayHome-Backend/` itself (`COPY . .`), not the repo root.** This contradicts the general "Railway's Docker build context is always the repo root" guidance elsewhere in this account's Railway lessons-learned — that may be accurate for other build paths, but for *this* service (Dockerfile builder + `rootDirectory` and `dockerfilePath` both pointing at `TheBayHome-Backend`), the effective build context is scoped to that directory. This was confirmed the hard way: `COPY TheBayHome-Backend/ .` repeatedly failed on Railway with `"/TheBayHome-Backend": not found` even though the identical Dockerfile built fine locally with the repo root as context — switching to `COPY . .` (context = `TheBayHome-Backend/`) fixed it immediately. There's a matching `TheBayHome-Backend/.dockerignore` (not the repo-root one) for the same reason. If you touch this Dockerfile, verify locally with `TheBayHome-Backend` itself as the build context (`cd TheBayHome-Backend && docker build -f Dockerfile .`), not the repo root — a repo-root-context local build will pass while Railway's fails, which is exactly what happened here.
-- Migrations run as Railway's **pre-deploy command** (`npx prisma migrate deploy`), configured on the service, not baked into the Dockerfile's `CMD` — the container's `CMD` only starts the server.
-- Project `staynest-booking-poc` (Railway) has `staging` and `production` environments. `staging` is **live**: Postgres (official `postgres` template, SSL-enabled image, with a volume) and the backend service, both online, migrations applied, domain `staynest-booking-poc-staging.up.railway.app` serving real traffic (verify with `curl .../api/health`). It has no seed data yet — the local seed script (`node prisma/seed.js`) was never pointed at it. `production` still has its default Railpack-builder config untouched (no rootDirectory/dockerfilePath set) and will fail to build until it's configured the same way `staging` was, or intentionally left alone until you're ready for it.
+- Migrations run as Railway's **pre-deploy command** (`npx prisma migrate deploy`), configured on the service, not baked into the Dockerfile's `CMD` — the container's `CMD` only starts the server. **`preDeployCommand` is a single string, not shell-chained** — `"npx prisma migrate deploy && node prisma/seed.js"` silently only ran the first command (Railway does not appear to invoke it through a shell). If you ever need to chain commands there, wrap it yourself: `"sh -c \"cmd1 && cmd2\""`.
+- Railway **dedupes deploy triggers against the same commit hash** — calling `redeploy` or `connect-service-source` again for a commit that already has a deployment (even a failed/removed one) can silently return `SKIPPED` rather than actually rebuilding with current service config. If a config-only change (env var, `preDeployCommand`, etc.) isn't taking effect, don't just keep retrying the same commit — either that, or Railway's build-snapshot infra is just having a bad moment (`failed to fetch snapshot` retry loops happened twice this session, self-resolved / needed a dashboard cancel). A trivial version-bump commit reliably forces a genuine fresh build when nothing else does.
+- Also learned: `mcp__railway__create-tcp-proxy` (to expose a database's port publicly) gets blocked by the local safety classifier even for a temporary/POC use case — don't rely on it to reach a Railway-internal database from your local machine. Route one-off scripts (like a manual `prisma/seed.js` run) through the service's own `preDeployCommand` instead, which stays on Railway's private network.
+
+**Frontend & admin panel** — deployed via Railway's **Railpack** auto-detect builder, deliberately, *not* a custom Dockerfile, to avoid repeating the backend's build-context debugging above. Railpack correctly scopes a Node/Next/Vite build to a service's `rootDirectory` without the COPY-path gymnastics a raw Dockerfile needs.
+- Frontend service: `rootDirectory: TheBayHome-Frontend`, `startCommand: npx next start -H 0.0.0.0 -p $PORT` (overridden — the package.json `start` script runs `next dev`, a dev server, not `next start`; don't rely on Railpack's default start detection here). Build-time env vars `NEXT_PUBLIC_SITE_URL` / `NEXT_PUBLIC_API_BASE_URL` must be set *before* the service's first build (Next.js inlines `NEXT_PUBLIC_*` vars at build time).
+- Admin panel service: `rootDirectory: TheBayHome-AdminPanel`, `startCommand: npx vite preview --host 0.0.0.0 --port $PORT`. Also needs `VITE_ALLOWED_HOSTS` set to the service's own Railway domain (comma-separated with `localhost,127.0.0.1`) — `vite preview` rejects requests whose `Host` header isn't in that list, per `vite.config.js`'s `preview.allowedHosts`. `VITE_API_URL` (build-time, Vite inlines `import.meta.env.*` too) must include the `/api` suffix, unlike the frontend's `NEXT_PUBLIC_API_BASE_URL`.
+- Whichever service you create last, remember to add its generated domain to the backend's `CLIENT_URLS` env var (comma-separated) — otherwise its requests get CORS-rejected.
+
+Project `staynest-booking-poc` (Railway) has `staging` and `production` environments — see "Deployed environments" above for what's live on `staging`. `production` still has its default Railpack-builder config untouched on the backend service (no rootDirectory/dockerfilePath set) and no frontend/admin services at all — it will fail to build until configured the same way `staging` was, or left alone deliberately.
 
 ## Cross-app conventions
 - All three apps talk over cookie-based sessions (`credentials: "include"` / `withCredentials: true`), not bearer tokens in headers — auth state depends on the backend's CORS/cookie config allowing the calling origin.

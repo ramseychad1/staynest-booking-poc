@@ -4,11 +4,29 @@
 
   <p>
     A full-stack boutique vacation rental platform for StayNest stays, built with a public booking website,
-    a secure admin operations dashboard, and a production-ready Express/MongoDB API.
+    a secure admin operations dashboard, and an Express/PostgreSQL API.
   </p>
 
-<img src="https://skillicons.dev/icons?i=react,nextjs,js,express,nodejs,tailwind,mongodb,redis&theme=dark" />
+<img src="https://skillicons.dev/icons?i=react,nextjs,js,express,nodejs,tailwind,postgres&theme=dark" />
 </div>
+
+---
+
+## POC Status
+
+The backend below was rebuilt from scratch on **Express + Prisma + PostgreSQL** (the original Mongo/Express backend's source was never located). It implements the full booking workflow and admin panel surface — auth (with OTP signup), properties, seasonal pricing, bookings, users, and admin dashboard analytics — but **does not** implement the blog CMS, things-to-do CMS, error-log viewer, Google login, S3 uploads, or the Redis/BullMQ email queue described elsewhere in this README; those remain the original design intent, not current behavior. Image uploads go through an S3-compatible storage abstraction that currently falls back to local disk.
+
+**Live staging deployment** (Railway project `staynest-booking-poc`):
+
+| App | URL |
+|---|---|
+| Public website | https://staynest-frontend-staging.up.railway.app |
+| Admin console | https://staynest-admin-staging.up.railway.app |
+| Backend API | https://staynest-booking-poc-staging.up.railway.app |
+
+Demo logins (seeded, same locally and on staging):
+- Admin — `admin@thekeysvibe.com` / `Admin123!`
+- Guest — `guest@thekeysvibe.com` / `Guest123!`
 
 ---
 
@@ -89,14 +107,14 @@ This repository is split into three production-focused applications:
 | Area           | Tools                                                               |
 | -------------- | ------------------------------------------------------------------- |
 | Runtime        | Node.js, Express 5                                                  |
-| Database       | MongoDB, Mongoose                                                   |
-| Authentication | JWT, signed cookies, DB-backed sessions, bcrypt                     |
+| Database       | PostgreSQL, Prisma                                                  |
+| Authentication | JWT, httpOnly cookies, bcrypt, email OTP for signup                 |
 | Validation     | Zod                                                                 |
-| File Uploads   | Multer, AWS S3 SDK                                                  |
-| Email          | Resend/Nodemailer templates                                         |
-| Jobs           | BullMQ, Redis/ioredis                                               |
-| Security       | CORS allowlist, rate limits, request sanitization, security headers |
-| Observability  | Persistent error logs with severity/status/request metadata         |
+| File Uploads   | Multer, S3-compatible storage (falls back to local disk if unset)   |
+| Email          | Not wired up — OTP codes print to the backend's own console         |
+| Security       | CORS allowlist, request validation                                  |
+
+See "POC Status" above for what's implemented vs. original design intent.
 
 ### Admin Panel
 
@@ -123,14 +141,12 @@ thebayhome-app/
 │   ├── src/context/           # Auth and booking draft state
 │   └── src/services/api.js    # Public web API client
 │
-├── TheBayHome-Backend/        # Express REST API
-│   ├── controllers/           # Request handlers
-│   ├── models/                # Mongoose schemas
-│   ├── routes/                # API route modules
-│   ├── services/              # Business logic
-│   ├── queues/                # Email job queue and worker
-│   ├── validators/            # Zod validation schemas
-│   └── utils/                 # S3, responses, rate limits, sanitizers
+├── TheBayHome-Backend/        # Express REST API (Prisma/PostgreSQL)
+│   ├── prisma/                # schema.prisma, migrations, seed.js
+│   ├── src/routes/            # API route modules
+│   ├── src/controllers/       # Request handlers
+│   ├── src/middleware/        # Auth, upload, error handling
+│   └── src/lib/               # Prisma client, JWT, serialization, storage
 │
 ├── TheBayHome-AdminPanel/     # Admin dashboard
 │   ├── src/pages/             # Dashboard, properties, bookings, CMS, users
@@ -167,18 +183,19 @@ Admin can cancel and optionally refund
 
 ## API Modules
 
-| Module       | Capabilities                                                     |
-| ------------ | ---------------------------------------------------------------- |
-| Auth         | Register, login, Google login, forgot password, reset password   |
-| OTP          | Send OTP for registration verification                           |
-| User         | Current user, logout, profile update, password update, all users |
-| Property     | Public listings, detail, admin create/update/delete, uploads     |
-| Season       | Per-property seasonal pricing windows                            |
-| Booking      | Create booking, user bookings, admin booking actions, analytics  |
-| Blog         | Public blog listing/detail, admin CMS actions                    |
-| Things To Do | Local guide listing/detail, admin CMS actions                    |
-| Contact      | Contact form email                                               |
-| Error Logs   | Admin-only error log listing/detail/delete                       |
+| Module       | Capabilities                                                      | Implemented? |
+| ------------ | ------------------------------------------------------------------- | :---: |
+| Auth         | Register (OTP-gated), login, forgot password, reset password        | ✅ |
+| OTP          | Send OTP for registration verification (console-logged, no email)   | ✅ |
+| User         | Current user, logout, profile update, password update, all users    | ✅ |
+| Property     | Public listings, detail, admin create/update/delete, uploads        | ✅ |
+| Season       | Per-property seasonal pricing windows                               | ✅ |
+| Booking      | Create booking, user bookings, admin booking actions, analytics     | ✅ |
+| Contact      | Contact form (console-logged, no email delivery)                    | ✅ |
+| Google login | OAuth login                                                          | ❌ |
+| Blog         | Public blog listing/detail, admin CMS actions                       | ❌ |
+| Things To Do | Local guide listing/detail, admin CMS actions                       | ❌ |
+| Error Logs   | Admin-only error log listing/detail/delete                          | ❌ |
 
 ---
 
@@ -188,7 +205,11 @@ Admin can cancel and optionally refund
 
 ```bash
 cd TheBayHome-Backend
+docker compose up -d          # local Postgres on localhost:5434
+cp .env.example .env          # set JWT_SECRET to a real random value
 npm install
+npx prisma migrate dev        # applies schema, generates client
+node prisma/seed.js           # demo admin/guest accounts + 3 properties
 npm run dev
 ```
 
@@ -212,7 +233,7 @@ Public app:
 http://localhost:4000
 ```
 
-The frontend includes a local rewrite from `/api/*` to `http://localhost:8001/api/*`.
+Requires `TheBayHome-Frontend/.env.local` with `NEXT_PUBLIC_API_BASE_URL=http://localhost:8001` (no `/api` suffix) for local dev against the backend above.
 
 ### 3. Admin Panel
 
@@ -228,6 +249,8 @@ Admin console:
 http://localhost:5173
 ```
 
+Requires `TheBayHome-AdminPanel/.env.local` with `VITE_API_URL=http://localhost:8001/api` (this one *does* need the `/api` suffix).
+
 ---
 
 ## Environment Variables
@@ -235,29 +258,26 @@ http://localhost:5173
 ### Backend `.env`
 
 ```env
-APP_ENV=development
-SERVER_PORT=8001
-MONGO_URI=
+NODE_ENV=development
+PORT=8001
+DATABASE_URL=postgresql://staynest:staynest@localhost:5434/staynest?schema=public
 CLIENT_URLS=http://localhost:4000,http://localhost:5173
 
 JWT_SECRET=
-COOKIE_SECRET_KEY=
+JWT_EXPIRES_IN=30d
+COOKIE_NAME=staynest_token
+COOKIE_SECURE=false
+COOKIE_SAMESITE=lax
 
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_REGION=
-AWS_S3_BUCKET=
-
-REDIS_HOST=
-REDIS_PORT=
-REDIS_PASSWORD=
-
-RESEND_API_KEY=
-EMAIL_FROM=
-
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
+# S3-compatible object storage. Leave blank to store uploads on local disk.
+BUCKET=
+ACCESS_KEY_ID=
+SECRET_ACCESS_KEY=
+ENDPOINT=
+REGION=auto
 ```
+
+See `TheBayHome-Backend/.env.example` for the authoritative, commented version.
 
 ### Frontend `.env`
 
@@ -278,10 +298,11 @@ VITE_API_URL=http://localhost:8001/api
 ## Resume Highlights
 
 - Built a complete full-stack rental platform with customer website, admin dashboard, and REST API.
-- Implemented secure authentication with JWT signed cookies, DB-backed sessions, role guards, OTP verification, and password reset.
+- Implemented secure authentication with JWT httpOnly cookies, role guards, OTP verification, and password reset.
 - Designed booking domain logic including date conflict checks, capacity validation, seasonal pricing, min/max stay rules, and booking state transitions.
-- Created an admin operations console with analytics, charts, booking workflows, user management, CMS modules, and error monitoring.
-- Integrated AWS S3 media uploads, Redis/BullMQ background email jobs, reusable email templates, and centralized error logging.
+- Created an admin operations console with analytics, charts, booking workflows, and user management.
+- Built an S3-compatible storage abstraction for media uploads with a local-disk fallback for zero-config dev.
+- Deployed all three apps to Railway (Postgres, Dockerfile builder for the API, Railpack for the two frontends) in a single project.
 - Developed responsive, production-style UI using Next.js, Vite React, Tailwind CSS, Radix UI, Lucide icons, and Recharts.
 
 ---
@@ -290,12 +311,10 @@ VITE_API_URL=http://localhost:8001/api
 
 - Admin-only protected routes for operational tools.
 - Role-based backend middleware for write operations.
-- Signed HTTP cookies and persistent sessions.
-- Input validation with Zod and request sanitization.
-- API rate limiting for auth, contact, booking, and write endpoints.
-- Sensitive data redaction in backend error logs.
-- S3 cleanup when images are replaced or deleted.
-- MongoDB transactions for booking creation and season conflict resolution.
+- httpOnly JWT cookie sessions.
+- Input validation with Zod.
+- Storage cleanup (S3 or local disk, per config) when images are replaced or deleted.
+- Booking date-conflict checks against existing bookings before creation.
 
 ---
 
