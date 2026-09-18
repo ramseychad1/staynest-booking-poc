@@ -43,13 +43,19 @@ export function uid(prefix = "id") {
 export const getEmbedUrl = (url) => {
   if (!url) return "";
 
+  // Google's "Share > Embed a map" URLs (/maps/embed?pb=...) are already
+  // iframe-ready as-is, unlike the /maps/place/<name> share-link format below.
+  if (url.includes("/maps/embed")) return url;
+
   const match = url.match(/place\/([^/]+)/);
 
-  if (!match) return "";
+  if (match) {
+    const place = match[1].replaceAll("+", " ");
+    return `https://www.google.com/maps?q=${encodeURIComponent(
+      place,
+    )}&output=embed`;
+  }
 
-  const place = match[1].replaceAll("+", " ");
-
-  return `https://www.google.com/maps?q=${encodeURIComponent(
-    place,
-  )}&output=embed`;
+  // Fallback: treat anything else (e.g. a plain address) as a search query.
+  return `https://www.google.com/maps?q=${encodeURIComponent(url)}&output=embed`;
 };
