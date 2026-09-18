@@ -5,6 +5,7 @@ import propertyRoutes from "./property.routes.js";
 import seasonRoutes from "./season.routes.js";
 import bookingRoutes from "./booking.routes.js";
 import contactRoutes from "./contact.routes.js";
+import mediaRoutes from "./media.routes.js";
 
 const router = Router();
 
@@ -17,5 +18,6 @@ router.use("/property", propertyRoutes);
 router.use("/season", seasonRoutes);
 router.use("/booking", bookingRoutes);
 router.use("/contact", contactRoutes);
+router.use("/media", mediaRoutes);
 
 export default router;

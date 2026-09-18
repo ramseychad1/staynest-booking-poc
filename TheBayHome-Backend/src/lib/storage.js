@@ -10,7 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const UPLOADS_DIR = path.resolve(__dirname, "../../uploads");
@@ -64,13 +64,12 @@ export async function saveFile(file) {
       }),
     );
 
-    const base = process.env.ENDPOINT.replace(/\/$/, "");
-    // Railway Buckets use virtual-hosted-style URLs (bucket as subdomain).
-    const url = base.startsWith("https://")
-      ? `https://${process.env.BUCKET}.${base.slice("https://".length)}/${key}`
-      : `${base}/${process.env.BUCKET}/${key}`;
-
-    return { key, url };
+    // Railway Buckets (like most S3-compatible buckets in practice) are
+    // private - there is no public-read option, so a direct bucket URL
+    // 403s for browsers. Serve through our own proxy route instead, using
+    // the bucket's credentials server-side. See getObjectStream() below and
+    // routes/media.routes.js.
+    return { key, url: `${publicBaseUrl()}/api/media/${key}` };
   }
 
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
@@ -78,14 +77,21 @@ export async function saveFile(file) {
   return { key, url: `${publicBaseUrl()}/uploads/${key}` };
 }
 
+export async function getObjectStream(key) {
+  if (!s3Configured) return null;
+  return s3Client.send(new GetObjectCommand({ Bucket: process.env.BUCKET, Key: key }));
+}
+
 export async function deleteFile(urlOrKey) {
   if (!urlOrKey) return;
 
-  if (s3Configured && urlOrKey.includes(process.env.BUCKET)) {
-    const key = urlOrKey.split("/").pop();
-    await s3Client
-      .send(new DeleteObjectCommand({ Bucket: process.env.BUCKET, Key: key }))
-      .catch(() => {});
+  if (urlOrKey.includes("/api/media/")) {
+    const key = urlOrKey.split("/api/media/").pop();
+    if (s3Configured) {
+      await s3Client
+        .send(new DeleteObjectCommand({ Bucket: process.env.BUCKET, Key: key }))
+        .catch(() => {});
+    }
     return;
   }
 
