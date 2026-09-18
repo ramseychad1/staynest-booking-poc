@@ -1,0 +1,15 @@
+# Repo-root .dockerignore. Every service's Docker build context is the repo
+# root (Railway doesn't scope it to a service's rootDirectory), so this
+# applies to all of them.
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+.git/
+ScreenShots/
+*.log
+.env
+.env.*
+!.env.example
+TheBayHome-Backend/uploads/*
+!TheBayHome-Backend/uploads/.gitkeep
