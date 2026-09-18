@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
-import { useGoogleAuth } from "@/hooks/useGoogleAuth";
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 
 function LoginForm() {
   const router = useRouter();
@@ -21,8 +21,6 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const handleGoogleAuth = useGoogleAuth({ setLoading, router, next });
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -102,20 +100,15 @@ function LoginForm() {
         )}
       </Button>
 
-      <Button
-        type="button"
-        variant="outline"
-        size="lg"
-        className="w-full"
-        onClick={() => handleGoogleAuth()}
-        disabled={loading}
-      >
-        {loading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          "Continue with Google"
-        )}
-      </Button>
+      {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+        <GoogleAuthButton
+          setLoading={setLoading}
+          router={router}
+          next={next}
+          loading={loading}
+          className="w-full"
+        />
+      )}
 
       <p className="text-sm text-center text-[var(--color-muted-foreground)]">
         New here?{" "}

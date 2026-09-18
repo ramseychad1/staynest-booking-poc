@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
-import { useGoogleAuth } from "@/hooks/useGoogleAuth";
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { useCooldown } from "@/hooks/useCooldown";
 import { signupSchema } from "@/validations/signupSchema";
 
@@ -37,8 +37,6 @@ function SignupForm() {
     password: "",
     confirm: "",
   });
-
-  const handleGoogleAuth = useGoogleAuth({ setLoading, router, next });
 
   const set = (k, v) => setForm((s) => ({ ...s, [k]: v }));
 
@@ -212,20 +210,15 @@ function SignupForm() {
         </>
       )}
 
-      <Button
-        type="button"
-        variant="outline"
-        size="lg"
-        className="w-full mt-6"
-        onClick={() => handleGoogleAuth()}
-        disabled={loading}
-      >
-        {loading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          "Continue with Google"
-        )}
-      </Button>
+      {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+        <GoogleAuthButton
+          setLoading={setLoading}
+          router={router}
+          next={next}
+          loading={loading}
+          className="w-full mt-6"
+        />
+      )}
 
       <p className="text-sm text-center text-[var(--color-muted-foreground)]">
         Already have an account?{" "}
