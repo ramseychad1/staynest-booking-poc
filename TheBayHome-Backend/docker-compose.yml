@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: staynest-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: staynest
+      POSTGRES_PASSWORD: staynest
+      POSTGRES_DB: staynest
+    ports:
+      - "5434:5432"
+    volumes:
+      - staynest_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U staynest"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  staynest_pgdata:
