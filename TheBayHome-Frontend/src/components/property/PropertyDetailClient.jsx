@@ -7,12 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import AvailabilityCard from "@/components/property/AvailabilityCard";
 import { api } from "@/services/api";
 import ImagePreviewModal from "@/components/property/ImagePreviewModel";
-import { getEmbedUrl } from "@/lib/utils";
 
 export default function PropertyDetailClient({
   propertyId,
   initialProperty,
   initialSeasons = [],
+  mapEmbedUrl = "",
 }) {
   const id = propertyId;
 
@@ -241,7 +241,7 @@ export default function PropertyDetailClient({
             <iframe
               title={`Map of ${property.location?.address || property.title}`}
               className="w-full h-[360px] border-0"
-              src={getEmbedUrl(property.location.url)}
+              src={mapEmbedUrl}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               onLoad={() => setMapLoading(false)}

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { api } from "@/services/api";
+import { resolveEmbedUrl } from "@/lib/mapEmbed";
 import PropertyDetailClient from "@/components/property/PropertyDetailClient";
 
 async function getPropertyPayload(id) {
@@ -47,11 +48,17 @@ export default async function PropertyDetailPage({ params }) {
 
   if (!property) notFound();
 
+  const mapEmbedUrl = await resolveEmbedUrl(
+    property.location?.url,
+    property.location?.address,
+  );
+
   return (
     <PropertyDetailClient
       propertyId={id}
       initialProperty={property}
       initialSeasons={seasons}
+      mapEmbedUrl={mapEmbedUrl}
     />
   );
 }

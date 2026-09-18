@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Loader2, Check, Save } from "lucide-react";
+import { ArrowLeft, Loader2, Check, Save, X } from "lucide-react";
 import PageHeader from "@/components/common/PageHeader";
 import ImageDropzone from "@/components/forms/ImageDropzone";
 import { Card } from "@/components/ui/card";
@@ -497,6 +497,33 @@ export default function ItemFormPage({ mode = "create" }) {
                 );
               })}
             </div>
+
+            {/* Amenities saved on this record that aren't in the standard
+                catalog above (e.g. imported/legacy data) - shown separately
+                so they're visible and removable instead of being silently
+                re-saved on every edit with no way to uncheck them. */}
+            {amenities.filter((a) => !vertical.amenities.includes(a)).length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-border">
+                <p className="text-xs text-muted-foreground">
+                  Other amenities on this record (not in the standard list):
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {amenities
+                    .filter((a) => !vertical.amenities.includes(a))
+                    .map((a) => (
+                      <button
+                        type="button"
+                        key={a}
+                        data-testid={`amenity-custom-${a.replace(/\s+/g, "-").toLowerCase()}`}
+                        onClick={() => toggleAmenity(a)}
+                        className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-all bg-foreground text-background border-foreground"
+                      >
+                        {a} <X className="w-3 h-3" />
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
           </Card>
         </div>
 
