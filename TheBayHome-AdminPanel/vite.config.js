@@ -10,6 +10,30 @@ const allowedHosts = (process.env.VITE_ALLOWED_HOSTS || "localhost,127.0.0.1")
   .map((host) => host.trim())
   .filter(Boolean);
 
+// The CSP's connect-src must include wherever the API actually lives, not
+// just the hardcoded thekeysvibe.com domain - derive it from VITE_API_URL
+// so this works on any deployment (Railway, etc.) without editing this file.
+const apiOrigin = (() => {
+  try {
+    return new URL(process.env.VITE_API_URL).origin;
+  } catch {
+    return null;
+  }
+})();
+
+const contentSecurityPolicy =
+  "default-src 'self'; " +
+  "script-src 'self' 'unsafe-inline'; " +
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+  "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+  "img-src 'self' data: blob: http://localhost:3000 https://api.dicebear.com https://d3jxmneabzth3l.cloudfront.net https://d2om00vm7sdvbc.cloudfront.net; " +
+  "font-src 'self' data: https://fonts.gstatic.com; " +
+  `connect-src 'self' http://localhost:* ws://localhost:* https://api.thekeysvibe.com${apiOrigin ? ` ${apiOrigin}` : ""}; ` +
+  "frame-src 'self' https://www.google.com https://maps.google.com;; " +
+  "object-src 'none'; " +
+  "base-uri 'self'; " +
+  "form-action 'self';";
+
 export default defineConfig({
   plugins: [
     react({
@@ -34,19 +58,17 @@ export default defineConfig({
     headers: {
       "X-Content-Type-Options": "nosniff",
       "Referrer-Policy": "no-referrer",
-      "Content-Security-Policy":
-        "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline'; " +
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-        "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-        "img-src 'self' data: blob: http://localhost:3000 https://api.dicebear.com https://d3jxmneabzth3l.cloudfront.net https://d2om00vm7sdvbc.cloudfront.net; " +
-        "font-src 'self' data: https://fonts.gstatic.com; " +
-        "connect-src 'self' http://localhost:* ws://localhost:* https://api.thekeysvibe.com; " +
-        "frame-src 'self' https://www.google.com https://maps.google.com;; " +
-        "object-src 'none'; " +
-        "base-uri 'self'; " +
-        "form-action 'self';",
+      "Content-Security-Policy": contentSecurityPolicy,
     },
   },
-  preview: { host: "0.0.0.0", port: 4173, allowedHosts },
+  preview: {
+    host: "0.0.0.0",
+    port: 4173,
+    allowedHosts,
+    headers: {
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "no-referrer",
+      "Content-Security-Policy": contentSecurityPolicy,
+    },
+  },
 });
