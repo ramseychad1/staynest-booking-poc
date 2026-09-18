@@ -2,9 +2,9 @@ import { rateCards } from "@/lib/mockData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = {
-  title: "Seasonal Rates | The Keys Vibe",
+  title: "Seasonal Rates | Powell Properties",
   description:
-    "Review seasonal nightly rate ranges and minimum stays for The Keys Vibe Florida Keys vacation rentals.",
+    "Review seasonal nightly rate ranges and minimum stays for Powell Properties Surfside Beach, SC vacation rentals.",
 };
 
 export default function RatePage() {

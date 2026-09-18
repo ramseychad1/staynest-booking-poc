@@ -30,23 +30,23 @@ export const metadata = {
     process.env.NEXT_PUBLIC_SITE_URL || "https://thekeysvibe.com",
   ),
   title: {
-    default: "The Keys Vibe | Boutique Florida Keys Rentals",
+    default: "Powell Properties - Surfside Beach Rentals",
     template: "%s",
   },
   description:
-    "Handpicked, dockside vacation homes in the Florida Keys. Private docks, ocean access, and a concierge that handles the rest.",
+    "Handpicked, dockside vacation homes in Surfside Beach, SC. Private docks, ocean access, and a concierge that handles the rest.",
   keywords: [
-    "Florida Keys vacation rentals",
+    "Surfside Beach, SC vacation rentals",
     "Key Largo rentals",
     "dockside vacation homes",
-    "The Keys Vibe",
+    "Powell Properties",
   ],
   openGraph: {
     type: "website",
-    siteName: "The Keys Vibe",
-    title: "The Keys Vibe | Boutique Florida Keys Rentals",
+    siteName: "Powell Properties",
+    title: "Powell Properties - Surfside Beach Rentals",
     description:
-      "Handpicked, dockside vacation homes in the Florida Keys with concierge support.",
+      "Handpicked, dockside vacation homes in Surfside Beach, SC with concierge support.",
     images: ["/images/hero-bg.png"],
   },
   icons: { icon: "/favicon.svg" },

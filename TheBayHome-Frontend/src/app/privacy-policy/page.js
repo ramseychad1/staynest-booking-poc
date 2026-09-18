@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Privacy Policy | The Keys Vibe",
-  description: "Privacy policy for The Keys Vibe vacation rental guests.",
+  title: "Privacy Policy | Powell Properties",
+  description: "Privacy policy for Powell Properties vacation rental guests.",
 };
 
 const sections = [

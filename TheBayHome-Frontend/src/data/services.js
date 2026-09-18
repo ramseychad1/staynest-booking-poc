@@ -14,7 +14,7 @@ export const servicesData = [
       "Enjoy a 4 - 5 hour morning trip, dependent on weather conditions. Captain included.....",
 
     description:
-      "Enjoy a 4 - 5 hour morning trip, dependent on weather conditions. Captain included. Perfect for guests looking for an exciting inshore or offshore fishing experience in the Florida Keys with professional guidance and premium equipment included.",
+      "Enjoy a 4 - 5 hour morning trip, dependent on weather conditions. Captain included. Perfect for guests looking for an exciting inshore or offshore fishing experience in Surfside Beach, SC with professional guidance and premium equipment included.",
 
     priceNote: "single charge, per stay",
   },

@@ -29,9 +29,9 @@ import {
 const propertyVertical = {
   key: "property",
   brand: {
-    name: "TheKeysVibe",
+    name: "Powell Properties",
     tagline: "Property Operations",
-    productName: "TheKeysVibe · Property Rentals",
+    productName: "Powell Properties · Property Rentals",
   },
   item: {
     singular: "Property",

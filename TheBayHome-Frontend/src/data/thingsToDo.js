@@ -149,9 +149,9 @@ export const thingsToDoData = {
   },
 
   "Backcountry fishing": {
-    "Florida Keys": [
+    "Surfside Beach, SC": [
       {
-        name: "Florida Keys Mangrove Fishing",
+        name: "Surfside Beach, SC Mangrove Fishing",
         image:
           "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1400&auto=format&fit=crop",
       },
@@ -166,7 +166,7 @@ export const thingsToDoData = {
           "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1400&auto=format&fit=crop",
       },
       {
-        name: "Snapper Fishing in the Keys",
+        name: "Snapper Fishing in Surfside Beach, SC",
         image:
           "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?q=80&w=1400&auto=format&fit=crop",
       },

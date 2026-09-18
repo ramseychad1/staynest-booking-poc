@@ -21,12 +21,12 @@ export async function generateMetadata({ params }) {
 
   if (!blog) {
     return {
-      title: "Blog Not Found | The Keys Vibe",
+      title: "Blog Not Found | Powell Properties",
     };
   }
 
   return {
-    title: `${blog.title} | The Keys Vibe`,
+    title: `${blog.title} | Powell Properties`,
     description: blog.shortDescription,
     openGraph: {
       title: blog.title,

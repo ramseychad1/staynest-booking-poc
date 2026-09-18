@@ -6,9 +6,9 @@ import { api } from "@/services/api";
 export const revalidate = 300;
 
 export const metadata = {
-  title: "Florida Keys Travel Blog | The Keys Vibe",
+  title: "Surfside Beach, SC Travel Blog | Powell Properties",
   description:
-    "Travel notes, local tips, and stay-planning ideas for Florida Keys vacation guests.",
+    "Travel notes, local tips, and stay-planning ideas for Surfside Beach, SC vacation guests.",
 };
 
 async function getBlogs() {
@@ -39,7 +39,7 @@ export default async function BlogsPage() {
       <section className="bg-[var(--color-primary)] text-white">
         <div className="mx-auto max-w-7xl px-5 py-14 text-center">
           <h1 className="font-display text-4xl font-bold sm:text-5xl">
-            Florida Keys Blog
+            Surfside Beach, SC Blog
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-white/90">
             Local notes for better stays, easier planning, and more time on the water.

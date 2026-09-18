@@ -3,9 +3,9 @@ import { thingsToDoData } from "@/data/thingsToDo";
 import ThingsToDoExplorer from "@/components/things-to-do/ThingsToDoExplorer";
 
 export const metadata = {
-  title: "Things To Do in the Florida Keys | The Keys Vibe",
+  title: "Things To Do in Surfside Beach, SC | Powell Properties",
   description:
-    "Explore restaurants, fishing, bird watching, and local Florida Keys favorites near The Keys Vibe vacation rentals.",
+    "Explore restaurants, fishing, bird watching, and local Surfside Beach, SC favorites near Powell Properties vacation rentals.",
 };
 
 function groupThingsToDo(items) {
@@ -73,7 +73,7 @@ export default async function ThingsToDoPage() {
           </h1>
 
           <p className="mx-auto mt-3 max-w-2xl text-white/90">
-            Handpicked Florida Keys spots, sorted by the kind of day you want.
+            Handpicked Surfside Beach, SC spots, sorted by the kind of day you want.
           </p>
         </div>
       </section>

@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Refund Policy | The Keys Vibe",
-  description: "Refund and cancellation policy for The Keys Vibe vacation stays.",
+  title: "Refund Policy | Powell Properties",
+  description: "Refund and cancellation policy for Powell Properties vacation stays.",
 };
 
 const sections = [

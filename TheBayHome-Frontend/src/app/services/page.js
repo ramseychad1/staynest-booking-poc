@@ -2,9 +2,9 @@ import ServicesList from "@/components/services/ServicesList";
 import { servicesData } from "@/data/services";
 
 export const metadata = {
-  title: "Vacation Concierge Services | The Keys Vibe",
+  title: "Vacation Concierge Services | Powell Properties",
   description:
-    "Add private fishing, chef, and concierge services to your Florida Keys vacation rental stay.",
+    "Add private fishing, chef, and concierge services to your Surfside Beach, SC vacation rental stay.",
 };
 
 export default function ServicesPage() {

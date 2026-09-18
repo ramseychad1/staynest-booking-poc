@@ -6,10 +6,10 @@ import {
 
 export const PROPERTY_HERO_CONTENT = [
   {
-    eyebrow: "Live The Keys Vibe",
+    eyebrow: "Welcome to Powell Properties",
     headline: ["DOCK OUT BACK.", "SAND BAR UP AHEAD"],
     script: "Unwind. Explore. Repeat",
-    body: "Your private waterfront escape in the heart of the Florida Keys.",
+    body: "Your private waterfront escape in the heart of Surfside Beach, SC.",
     bgImage: "/images/hero-bg.png",
     highlights: [
       { label: "Private Dock", Icon: Anchor },

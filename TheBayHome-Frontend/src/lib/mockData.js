@@ -275,7 +275,7 @@ export const testimonials = [
     role: "Founder, Linton Studio",
     rating: 5,
     initials: "AL",
-    text: "We came for a long weekend and ended up rebooking before we left. The dock, the sandbar, the quiet mornings — this is the Florida Keys you always pictured but never quite found."
+    text: "We came for a long weekend and ended up rebooking before we left. The dock, the sandbar, the quiet mornings — this is Surfside Beach, SC you always pictured but never quite found."
   },
   {
     id: "t3",

@@ -28,12 +28,12 @@ export async function generateMetadata({ params }) {
 
   if (!property) {
     return {
-      title: "Property Not Found | The Keys Vibe",
+      title: "Property Not Found | Powell Properties",
     };
   }
 
   return {
-    title: `${property.title} | The Keys Vibe`,
+    title: `${property.title} | Powell Properties`,
     description: property.description,
     openGraph: {
       title: property.title,

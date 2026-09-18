@@ -5,9 +5,9 @@ import { api } from "@/services/api";
 export const revalidate = 300;
 
 export const metadata = {
-  title: "Florida Keys Vacation Rentals | The Keys Vibe",
+  title: "Surfside Beach, SC Vacation Rentals | Powell Properties",
   description:
-    "Browse handpicked Florida Keys vacation homes with private docks, ocean access, and local concierge support.",
+    "Browse handpicked Surfside Beach, SC vacation homes with private docks, ocean access, and local concierge support.",
 };
 
 async function getProperties() {
