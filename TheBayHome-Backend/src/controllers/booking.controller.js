@@ -147,9 +147,13 @@ export async function createBooking(req, res, next) {
 
 export async function listBookings(req, res, next) {
   try {
-    const { status, propertyId, search } = req.query;
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
+    const { bookingStatus, paymentStatus, propertyId, search } = req.query;
+
     const where = {};
-    if (status && status !== "all") where.bookingStatus = status;
+    if (bookingStatus && bookingStatus !== "all") where.bookingStatus = bookingStatus;
+    if (paymentStatus && paymentStatus !== "all") where.paymentStatus = paymentStatus;
     if (propertyId) where.propertyId = propertyId;
     if (search) {
       where.OR = [
@@ -159,13 +163,30 @@ export async function listBookings(req, res, next) {
       ];
     }
 
-    const bookings = await prisma.booking.findMany({
-      where,
-      include: { property: true, user: true },
-      orderBy: { createdAt: "desc" },
-    });
+    const [bookings, totalCount] = await Promise.all([
+      prisma.booking.findMany({
+        where,
+        include: { property: true, user: true },
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.booking.count({ where }),
+    ]);
 
-    return ok(res, bookings.map(serializeBooking));
+    const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+
+    return ok(res, {
+      bookings: bookings.map(serializeBooking),
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+        hasPrevPage: page > 1,
+        hasNextPage: page < totalPages,
+      },
+    });
   } catch (err) {
     next(err);
   }

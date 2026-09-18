@@ -8,6 +8,10 @@ export function serializeUser(u) {
   if (!u) return null;
   return {
     _id: u.id,
+    // Also expose plain `id` - the admin panel's UserList.jsx uses `u.id`
+    // (inconsistent with the `_id` convention everywhere else in that app,
+    // likely an oversight in the original code) for row keys/data-testid.
+    id: u.id,
     name: u.name,
     email: u.email,
     phone: u.phone ?? null,

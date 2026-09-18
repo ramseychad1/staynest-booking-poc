@@ -65,10 +65,48 @@ export async function updatePassword(req, res, next) {
   }
 }
 
-export async function listAllUsers(_req, res, next) {
+export async function listAllUsers(req, res, next) {
   try {
-    const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" } });
-    return ok(res, users.map(serializeUser));
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
+    const { search, role } = req.query;
+
+    const where = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: String(search), mode: "insensitive" } },
+        { email: { contains: String(search), mode: "insensitive" } },
+      ];
+    }
+    if (role && role !== "all") {
+      // The admin UI's role filter uses generic "User"/"Admin" labels;
+      // this schema's enum is Guest/Admin.
+      where.role = role === "User" ? "Guest" : role;
+    }
+
+    const [users, totalCount] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+
+    return ok(res, {
+      users: users.map(serializeUser),
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+        hasPrevPage: page > 1,
+        hasNextPage: page < totalPages,
+      },
+    });
   } catch (err) {
     next(err);
   }
