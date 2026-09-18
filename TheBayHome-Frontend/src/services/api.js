@@ -100,10 +100,15 @@ export const api = {
     request("/user/updatePassword", { method: "PATCH", body: payload }),
 
   // Properties
-  listProperties: () => request("/property"),
-  getProperty: (id) => request(`/property/${id}`),
-  getSeasonsData: (propertyId) => request(`/season/${propertyId}`),
-  getPropertySeasons: (propertyId) => request(`/season/${propertyId}`),
+  // Admins actively edit these via the admin panel and expect the public
+  // site to reflect changes immediately, so skip the Data Cache entirely
+  // rather than serving up to 5 minutes of stale data (see CLAUDE.md).
+  listProperties: () => request("/property", { cache: "no-store" }),
+  getProperty: (id) => request(`/property/${id}`, { cache: "no-store" }),
+  getSeasonsData: (propertyId) =>
+    request(`/season/${propertyId}`, { cache: "no-store" }),
+  getPropertySeasons: (propertyId) =>
+    request(`/season/${propertyId}`, { cache: "no-store" }),
   getBookedDates: (id) => request(`/property/${id}/booked-dates`),
   getPricing: (id, { from, to }) =>
     request(

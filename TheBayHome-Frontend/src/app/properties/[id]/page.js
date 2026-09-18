@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import { api } from "@/services/api";
 import PropertyDetailClient from "@/components/property/PropertyDetailClient";
 
-export const revalidate = 300;
-
 async function getPropertyPayload(id) {
   try {
     const [propertyRes, seasonsRes] = await Promise.all([

@@ -7,8 +7,6 @@ import TestimonialSlider from "@/components/home/TestimonialSlider";
 import TealBand from "@/components/home/TealBand";
 import { testimonials } from "@/lib/mockData";
 
-export const revalidate = 300;
-
 export default async function HomePage() {
   let properties = [];
 

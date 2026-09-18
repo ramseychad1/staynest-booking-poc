@@ -2,8 +2,6 @@ import { Star, ShieldCheck, Headphones } from "lucide-react";
 import PropertyCard from "@/components/property/PropertyCard";
 import { api } from "@/services/api";
 
-export const revalidate = 300;
-
 export const metadata = {
   title: "Surfside Beach, SC Vacation Rentals | Powell Properties",
   description:
